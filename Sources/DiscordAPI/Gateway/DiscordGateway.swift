@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import os
+import Logging
 import SwiftUI
 import DiscordKitCommon
 
@@ -29,7 +29,7 @@ public class DiscordGateway: ObservableObject {
     @Published public var reachable = false
     
     // Logger
-	private let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? DiscordAPI.subsystem, category: "DiscordGateway")
+	private let log = Logger(label: "DiscordGateway")
     
     public func logout() {
         log.debug("Logging out on request")
@@ -83,7 +83,7 @@ public class DiscordGateway: ObservableObject {
         default: break
         }
         onEvent.notify(event: (type, data))
-        log.info("Dispatched event <\(type.rawValue, privacy: .public)>")
+        log.info("Dispatched event <\(type.rawValue)>")
     }
     
 	public init(connectionTimeout: Double = 5, maxMissedACK: Int = 3) {

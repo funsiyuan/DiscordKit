@@ -7,12 +7,12 @@
 
 import Foundation
 import Compression
-import OSLog
+import Logging
 
 public class DecompressionEngine {
     private static let ZLIB_SUFFIX = Data([0x00, 0x00, 0xff, 0xff]), BUFFER_SIZE = 32_768
     
-	private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? DiscordAPI.subsystem, category: "DecompressionEngine")
+	private static let log = Logger(label: "DecompressionEngine")
     private var buf = Data(), stream: compression_stream, status: compression_status,
                 decompressing = false
     
@@ -34,7 +34,7 @@ public class DecompressionEngine {
         buf.append(data)
         
         guard buf.count >= 4, buf.suffix(4) == DecompressionEngine.ZLIB_SUFFIX else {
-            DecompressionEngine.log.debug("Appending to buf, current buf len: \(self.buf.count, privacy: .public)")
+            DecompressionEngine.log.debug("Appending to buf, current buf len: \(self.buf.count)")
             return nil
         }
         
@@ -69,7 +69,7 @@ public extension DecompressionEngine {
         var decompressed = Data(), srcChunk: Data?
         
         defer {
-            DecompressionEngine.log.debug("Decompressed \(initialSize)B -> \(decompressed.count, privacy: .public)B")
+            DecompressionEngine.log.debug("Decompressed \(initialSize)B -> \(decompressed.count)B")
             decompressing = false
             destinationBufferPointer.deallocate()
         }

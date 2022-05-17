@@ -7,7 +7,7 @@
 
 import Foundation
 import Reachability
-import OSLog
+import Logging
 import Combine
 
 /// A robust WebSocket that handles resuming, reconnection and heartbeats
@@ -21,7 +21,7 @@ public class RobustWebSocket: NSObject, ObservableObject {
     
     private var session: URLSession!, socket: URLSessionWebSocketTask!,
                 decompressor: DecompressionEngine!
-	private let reachability = try! Reachability(), log = Logger(subsystem: Bundle.main.bundleIdentifier ?? DiscordAPI.subsystem, category: "RobustWebSocket")
+	private let reachability = try! Reachability(), log = Logger(label: "RobustWebSocket")
     
     private let queue: OperationQueue
         
@@ -109,7 +109,7 @@ public class RobustWebSocket: NSObject, ObservableObject {
                 self?.attachSockReceiveListener()
             case .failure(let error):
                 // If an error is encountered here, the connection is probably broken
-                self?.log.error("Error when receiving: \(error.localizedDescription, privacy: .public)")
+                self?.log.error("Error when receiving: \(error.localizedDescription)")
                 self?.forceClose()
             }
         }
@@ -184,7 +184,7 @@ public class RobustWebSocket: NSObject, ObservableObject {
             hasConnected()
             // Start heartbeating and send identify
             guard let d = decoded.d as? GatewayHello else { return }
-            log.debug("Hello payload is: \(String(describing: d), privacy: .public)")
+            log.debug("Hello payload is: \(d)")
             startHeartbeating(interval: Double(d.heartbeat_interval) / 1000.0)
         
             // Check if we're attempting to and can resume
@@ -201,7 +201,6 @@ public class RobustWebSocket: NSObject, ObservableObject {
             // isReconnecting = false // Resuming failed/not attempted
             guard let identify = getIdentify() else {
                 log.debug("Token not in keychain")
-                Logger().debug("Hello there, \("safljslaf", privacy: .private(mask: .hash))")
                 // authFailed = true
                 // socket.disconnect(closeCode: 1000)
                 close(code: .normalClosure)
@@ -393,10 +392,12 @@ public extension RobustWebSocket {
         guard let encoded = try? JSONEncoder().encode(sendPayload)
         else { return }
         
-        log.debug("Outgoing Payload: <\(String(describing: op), privacy: .public)> \(String(describing: data), privacy: .sensitive(mask: .hash)) [seq: \(String(describing: self.seq), privacy: .public)]")
+        log.debug("Outgoing Payload: <\(String(describing: op))> \(String(describing: data)) [seq: \(self.seq ?? -1)]")
         // socket.write(string: String(data: encoded, encoding: .utf8)!)
         socket.send(.data(encoded), completionHandler: completionHandler ?? { [weak self] err in
-            if let err = err { self?.log.error("Socket send error: \(err.localizedDescription, privacy: .public)") }
+            if let err = err {
+                self?.log.error("Socket send error: \(err.localizedDescription)")
+            }
         })
     }
 }
