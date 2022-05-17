@@ -14,6 +14,7 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/ashleymills/Reachability.swift", from: "5.1.0"),
+        .package(url: "https://github.com/apple/swift-log", .upToNextMajor(from: "1.4.2")),
 	],
 	targets: [
 		.target(
