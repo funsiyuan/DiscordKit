@@ -114,9 +114,25 @@ public class DiscordGateway: ObservableObject {
         log.info("Dispatched event <\(type.rawValue, privacy: .public)>")
     }
     
+    /// Sets the cache object for this instance of ``DiscordGateway``
+    ///
+    /// > Warning: Calling this method again on an instance where the
+    /// > cache has already been set results in undefined behaviour.
+    ///
+    /// - Parameter cache: A cache object to cache data in, refer to
+    /// ``CachedState`` for more info.
+    public func setCache(_ cache: CachedState) {
+        self.cache = cache
+    }
+    
     /// Inits an instance of ``DiscordGateway``
     ///
     /// Refer to ``RobustWebSocket/init()`` for more details about parameters
+    ///
+    /// > Important: The socket is no longer automatically opened upon calling
+    /// > ``init(connectionTimeout:maxMissedACK:)``. Please set a cache with
+    /// > ``setCache(_:)`` first before calling ``connect()`` to establish the
+    /// > Gateway connection.
     ///
     /// - Parameters:
     ///   - connectionTimeout: The timeout before the connection attempt
@@ -124,15 +140,11 @@ public class DiscordGateway: ObservableObject {
     ///   - maxMissedACK: Does not have any effect, included for backward
     ///   compatibility. The current implementation follows the official
     ///   Discord client for the missed heartbeat ACK tolerance.
-    ///   - cache: A cache object to cache data in, refer to ``CachedState`` for
-    ///   more info.
 	public init(
         connectionTimeout: Double = 5,
-        maxMissedACK: Int = 3,
-        cache: CachedState
+        maxMissedACK: Int = 3
     ) {
         socket = RobustWebSocket()
-        self.cache = cache
         evtListenerID = socket.onEvent.addHandler { [weak self] (t, d) in
             self?.handleEvt(type: t, data: d)
         }
