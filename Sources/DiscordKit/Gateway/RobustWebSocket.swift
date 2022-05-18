@@ -303,7 +303,8 @@ public class RobustWebSocket: NSObject, ObservableObject {
     ///   - maxMessageSize: The maximum outgoing and incoming payload size for the socket.
     ///   - reconnectIntClosure: A closure called with `(closecode, reconnectionTimes)`
     ///   used to determine the reconnection delay.
-    public init(timeout: TimeInterval, maxMessageSize: Int, reconnectIntClosure: @escaping (URLSessionWebSocketTask.CloseCode?, Int) -> TimeInterval?) {
+    ///   - shouldConnect: If the socket should attempt to connect immediately
+    public init(timeout: TimeInterval, maxMessageSize: Int, shouldConnect: Bool = true, reconnectIntClosure: @escaping (URLSessionWebSocketTask.CloseCode?, Int) -> TimeInterval?) {
         self.timeout = timeout
         queue = OperationQueue()
         queue.qualityOfService = .utility
@@ -311,7 +312,7 @@ public class RobustWebSocket: NSObject, ObservableObject {
         maxMsgSize = maxMessageSize
         super.init()
         session = URLSession(configuration: .default, delegate: self, delegateQueue: queue)
-        connect()
+        if shouldConnect { connect() }
     }
     
     /// Inits an instance of ``RobustWebSocket`` with all parameters set
@@ -321,8 +322,10 @@ public class RobustWebSocket: NSObject, ObservableObject {
     /// - Connection timeout: 4s
     /// - Maximum socket payload size: 10MiB
     /// - Reconnection delay: `1.4^reconnectionTimes * 5 - 5`
-    public override convenience init() {
-        self.init(timeout: TimeInterval(4), maxMessageSize: 1024*1024*10) { code, times in
+    public convenience init(shouldConnect: Bool = true) {
+        self.init(timeout: TimeInterval(4),
+                  maxMessageSize: 1024*1024*10,
+                  shouldConnect: shouldConnect) { code, times in
             guard code != .policyViolation, code != .internalServerError, times < 10
             else { return nil }
             

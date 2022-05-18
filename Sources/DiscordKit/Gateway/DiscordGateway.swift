@@ -144,7 +144,7 @@ public class DiscordGateway: ObservableObject {
         connectionTimeout: Double = 5,
         maxMissedACK: Int = 3
     ) {
-        socket = RobustWebSocket()
+        socket = RobustWebSocket(shouldConnect: false)
         evtListenerID = socket.onEvent.addHandler { [weak self] (t, d) in
             self?.handleEvt(type: t, data: d)
         }
