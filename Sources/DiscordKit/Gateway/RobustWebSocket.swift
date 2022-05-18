@@ -45,8 +45,8 @@ public class RobustWebSocket: NSObject, ObservableObject {
     /// be attempted if/when this happens.
     public let onSessionInvalid = EventDispatch<Void>()
     
-    private var session: URLSession!, socket: URLSessionWebSocketTask!,
-                decompressor: DecompressionEngine!
+    private var session: URLSession!, socket: URLSessionWebSocketTask,
+                decompressor: DecompressionEngine
 	private let reachability = try! Reachability(), log = Logger(subsystem: Bundle.main.bundleIdentifier ?? DiscordAPI.subsystem, category: "RobustWebSocket")
     
     private let queue: OperationQueue
@@ -304,7 +304,17 @@ public class RobustWebSocket: NSObject, ObservableObject {
     ///   - reconnectIntClosure: A closure called with `(closecode, reconnectionTimes)`
     ///   used to determine the reconnection delay.
     ///   - shouldConnect: If the socket should attempt to connect immediately
-    public init(timeout: TimeInterval, maxMessageSize: Int, shouldConnect: Bool = true, reconnectIntClosure: @escaping (URLSessionWebSocketTask.CloseCode?, Int) -> TimeInterval?) {
+    public init(
+        timeout: TimeInterval = 4,
+        maxMessageSize: Int = 1024*1024*10,
+        shouldConnect: Bool = true,
+        reconnectIntClosure: @escaping (URLSessionWebSocketTask.CloseCode?, Int) -> TimeInterval? = { code, times in
+            guard code != .policyViolation, code != .internalServerError, times < 10
+            else { return nil }
+            
+            return pow(1.4, Double(times)) * 5 - 5
+        }
+    ) {
         self.timeout = timeout
         queue = OperationQueue()
         queue.qualityOfService = .utility
@@ -322,16 +332,11 @@ public class RobustWebSocket: NSObject, ObservableObject {
     /// - Connection timeout: 4s
     /// - Maximum socket payload size: 10MiB
     /// - Reconnection delay: `1.4^reconnectionTimes * 5 - 5`
-    public convenience init(shouldConnect: Bool = true) {
+    /*public init(shouldConnect: Bool = true) {
         self.init(timeout: TimeInterval(4),
                   maxMessageSize: 1024*1024*10,
-                  shouldConnect: shouldConnect) { code, times in
-            guard code != .policyViolation, code != .internalServerError, times < 10
-            else { return nil }
-            
-            return pow(1.4, Double(times)) * 5 - 5
-        }
-    }
+                  shouldConnect: shouldConnect)
+    }*/
 }
 
 
@@ -458,7 +463,7 @@ public extension RobustWebSocket {
     /// it has been closed with `close()`. This method has no effect if the socket
     /// is already opened.
     func open() {
-        guard socket.state != .running else { return }
+        guard socket != nil, socket.state != .running else { return }
         clearPendingReconnectIfNeeded()
         reconnectWhenOnlineAgain = false
         explicitlyClosed = false
