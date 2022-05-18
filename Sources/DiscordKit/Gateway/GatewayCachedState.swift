@@ -20,4 +20,6 @@ public class CachedState: ObservableObject {
     @Published public var dms: [Channel]?
     @Published public var user: User?
     @Published public var users: [User]? // Cached users, grows over time
+    
+    public init() {}
 }
