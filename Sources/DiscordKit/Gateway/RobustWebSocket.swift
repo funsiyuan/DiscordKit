@@ -463,7 +463,7 @@ public extension RobustWebSocket {
     /// it has been closed with `close()`. This method has no effect if the socket
     /// is already opened.
     func open() {
-        guard socket != nil, socket.state != .running else { return }
+        guard socket == nil || socket.state != .running else { return }
         clearPendingReconnectIfNeeded()
         reconnectWhenOnlineAgain = false
         explicitlyClosed = false
