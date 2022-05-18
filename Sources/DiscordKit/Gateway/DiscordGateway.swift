@@ -30,15 +30,7 @@ public class DiscordGateway: ObservableObject {
     // WebSocket object
     @Published public var socket: RobustWebSocket!
     
-    /// A cache for some data received from the Gateway
-    ///
-    /// Data from the `READY` event is stored in this cache. The data
-    /// within this cache is updated with received events, and should
-    /// remain fresh.
-    ///
-    /// > In the future, presence updates and REST API requests will
-    /// > also be stored and kept fresh in this cache.
-    @Published public var cache: CachedState = CachedState()
+    private var cache: CachedState!
     
     private var evtListenerID: EventDispatch.HandlerIdentifier? = nil,
                 authFailureListenerID: EventDispatch.HandlerIdentifier? = nil,
@@ -132,8 +124,15 @@ public class DiscordGateway: ObservableObject {
     ///   - maxMissedACK: Does not have any effect, included for backward
     ///   compatibility. The current implementation follows the official
     ///   Discord client for the missed heartbeat ACK tolerance.
-	public init(connectionTimeout: Double = 5, maxMissedACK: Int = 3) {
+    ///   - cache: A cache object to cache data in, refer to ``CachedState`` for
+    ///   more info.
+	public init(
+        connectionTimeout: Double = 5,
+        maxMissedACK: Int = 3,
+        cache: CachedState
+    ) {
         socket = RobustWebSocket()
+        self.cache = cache
         evtListenerID = socket.onEvent.addHandler { [weak self] (t, d) in
             self?.handleEvt(type: t, data: d)
         }
