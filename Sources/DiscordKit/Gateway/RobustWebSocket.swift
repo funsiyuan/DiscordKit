@@ -45,8 +45,8 @@ public class RobustWebSocket: NSObject, ObservableObject {
     /// be attempted if/when this happens.
     public let onSessionInvalid = EventDispatch<Void>()
     
-    private var session: URLSession!, socket: URLSessionWebSocketTask,
-                decompressor: DecompressionEngine
+    private var session: URLSession!, socket: URLSessionWebSocketTask!,
+                decompressor: DecompressionEngine!
 	private let reachability = try! Reachability(), log = Logger(subsystem: Bundle.main.bundleIdentifier ?? DiscordAPI.subsystem, category: "RobustWebSocket")
     
     private let queue: OperationQueue
