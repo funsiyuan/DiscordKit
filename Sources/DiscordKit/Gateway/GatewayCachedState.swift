@@ -7,12 +7,12 @@
 
 import Foundation
 
-/// A struct for storing cached data from the Gateway
+/// An observable class for storing cached data from the Gateway
 ///
 /// See ``DiscordGateway/cache`` for more details.
-public struct CachedState {
-	public var guilds: [Guild]?
-	public var dms: [Channel]?
-	public var user: User?
-	public var users: [User]? // Cached users, grows over time
+public class CachedState: ObservableObject {
+    @Published public var guilds: [Guild]?
+    @Published public var dms: [Channel]?
+    @Published public var user: User?
+    @Published public var users: [User]? // Cached users, grows over time
 }
