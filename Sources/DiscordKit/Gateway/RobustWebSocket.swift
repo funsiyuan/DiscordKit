@@ -281,6 +281,8 @@ public class RobustWebSocket: NSObject, ObservableObject {
                 canResume = true
                 fallthrough
             case .resumed: sessionOpen = true
+            case .readySupplemental:
+                print(message)
             default: break
             }
             onEvent.notify(event: (type, decoded.d))

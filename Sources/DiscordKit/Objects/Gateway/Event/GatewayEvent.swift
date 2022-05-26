@@ -12,6 +12,7 @@ import Foundation
 public enum GatewayEvent: String, Codable {
     // MARK: Gateway WebSocket Lifecycle
     case ready = "READY"
+    case readySupplemental = "READY_SUPPLEMENTAL"
     case resumed = "RESUMED" // End of events replay
     
     // MARK: Channels
